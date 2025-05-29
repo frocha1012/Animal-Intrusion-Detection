@@ -1,53 +1,173 @@
-# Animal-Intrusion-Detection
-> Animal Intrusion Detection using yolov5
 
-### Dataset
- [![Drive](https://custom-icon-badges.herokuapp.com/badge/-Drive%20Link-White?style=for-the-badge&logoColor=white&logo=link&color=black)](https://drive.google.com/drive/folders/1xBHb2l4Z70Z-oPXHR3QvZF3iaYZnSGx-?usp=sharing)
-### Preparing the Data
-- Various classes are collected 
-    - Tiger
-    - Giraffe
-    - Bear
-    - Lion
-    - Elephant
-    - Deer
-    - Wolf
-    - Bull
-    - Monkey
-    - Leopord
-    - Rhinoceros
-    - Hippo
-    - Cattle
-- The collected data was labelled
+# 🐄 Animal Intrusion Detection (YOLOv5)
 
-### Spliting the Data
-- The data is split into train and validation which is of the ratio 80:20
-- The prepared dataset is uploaded into the drive
+This project uses a YOLOv5 model to detect **wild and domestic animals** in images or live video.  
+It is based on the [Animal-Intrusion-Detection repo](https://github.com/SaiSwarup27/Animal-Intrusion-Detection), and expands it with:
 
-### Cloning of Yolov5 and installing requirements
-- The yolov5 github repo was cloned into google colab
-- The data is mounted onto the google drive
-- The dataset is unzipped for further accessing
-- All the requirements for yolov5 are installed
+- ✅ A web app built with Flask (styled with Bootstrap)
+- ✅ A simple Python desktop GUI (Tkinter)
+- ✅ A camera-based detection script (original from repo)
 
-### Data training and Validation
-- Mark the given config files as required
-- the training of model is done with image size 415, batch size - 31, epochs -100
-- Weights of yolov5s is given
-### Inference
-- The inference files are uploaded (video, images)
-- The inference with the weights of best.pt is done
-### Display
-- The detected image is displayed
+---
 
-### Predictions
-> Image
-<p align="center" width="100%">
-    <img width="90%" src="https://github.com/SaiSwarup27/Animal-Intrusion-Detection/blob/main/Images/pred_cattle.jpg">
-</p>
+## 🧠 Overview of Tools
 
-> Video </br>
+| Mode          | File       | Description                                                                 |
+|---------------|------------|-----------------------------------------------------------------------------|
+| 🧪 Web App     | `main.py`  | Upload 2 images, see detections and bounding boxes in browser               |
+| 🖥 Desktop GUI | `app.py`   | Simple windowed app with image upload and label display                     |
+| 🎥 Camera Mode | `camera.py`| Original webcam detection using YOLOv5                                      |
 
-https://user-images.githubusercontent.com/96674419/171603746-b8281df0-1d90-4378-9830-50f71404b53d.mp4
+Model used: `yolov5/best.pt` (included in the repo)
 
+---
 
+## 🌐 Web App (Flask)
+
+### 📦 Dependencies
+
+```bash
+pip install flask torch torchvision pillow opencv-python
+```
+
+### ▶️ How to Run
+
+```bash
+python main.py
+```
+
+Then visit: [http://localhost:5000](http://localhost:5000)
+
+### 🖼 Features
+- Upload 2 images at once
+- Automatically saves and displays **bounding boxes**
+- Shows labels + confidence
+- Responsive layout via Bootstrap
+- Annotated images saved inside `static/uploads/`
+
+---
+
+## 🖥 Desktop GUI (Tkinter)
+
+### 📦 Dependencies
+
+```bash
+pip install torch torchvision pillow opencv-python
+```
+
+### ▶️ How to Run
+
+```bash
+python app.py
+```
+
+- Upload Image 1 and Image 2
+- See side-by-side image previews
+- Detected animal names and confidence appear in listboxes
+
+> This version works well, but is visually basic (uses native widgets only).
+
+---
+
+## 🎥 Camera Detection
+
+### ▶️ How to Run
+
+```bash
+python camera.py
+```
+
+- Starts your webcam and runs live YOLOv5 detection
+- Bounding boxes and labels appear in real-time
+- Great for use in farms, barns, zoos, etc.
+
+---
+
+## 🔧 Code Modifications from Original Repo
+
+### ✅ 1. Web Interface + Image Saving
+
+**New files added:**
+- `main.py` — Flask web server
+- `templates/index.html` — HTML form for uploading 2 images
+- `static/uploads/` — Stores both uploaded and annotated images
+
+**Code added in `main.py`:**
+```python
+results.save(save_dir=UPLOAD_FOLDER)
+```
+→ This saves the image with bounding boxes drawn by YOLOv5.
+
+---
+
+### ✅ 2. Desktop App Added
+
+**New file:**
+- `app.py` — Built with `tkinter`, lets you select 2 images and shows detected labels per image.
+
+---
+
+### ✅ 3. 🔥 OpenCV Bounding Box Crash Fixed
+
+If you saw this error in YOLO:
+```
+cv2.error: img marked as output argument, but provided NumPy array marked as readonly
+```
+
+It’s caused by YOLO trying to draw on a read-only NumPy array.
+
+✅ **Fix made inside: `yolov5/utils/plots.py`**
+- Find `class Annotator` and replace:
+```python
+self.im = im
+```
+- With this:
+```python
+self.im = im.copy()  # Fixes readonly OpenCV error
+```
+
+---
+
+### ✅ 4. `common.py` involvement
+
+**File affected during image save:**
+- `yolov5/models/common.py` is used internally by `results.save()` and `DetectMultiBackend`.
+
+No edits were made here, but it’s **executed during image annotation**.
+
+---
+
+## 📁 Folder Structure
+
+```
+animal-intrusion-detection/
+├── app.py                 ← Desktop GUI app
+├── main.py                ← Flask Web App
+├── camera.py              ← Webcam live detection
+├── yolov5/
+│   ├── best.pt            ← Trained model
+│   ├── utils/plots.py     ← MODIFIED (OpenCV fix)
+│   └── models/common.py   ← Used by YOLO saving pipeline
+├── static/uploads/        ← Web upload + output images
+├── templates/index.html   ← Web form UI
+```
+
+---
+
+## 🙏 Credits
+
+- **YOLOv5 by Ultralytics** – https://github.com/ultralytics/yolov5  
+- **Original Repo** – https://github.com/SaiSwarup27/Animal-Intrusion-Detection  
+- **Fork & Enhancements** – [frocha1012](https://github.com/frocha1012)
+
+---
+
+## ✅ Status
+
+All 3 modes are fully working:
+
+- Web: ✔ Annotates images, shows labels, works on any browser
+- Desktop: ✔ Functional, minimal
+- Camera: ✔ Live detection with bounding boxes
+
+Ready to test, fork, or deploy.
